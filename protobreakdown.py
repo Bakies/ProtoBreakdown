@@ -5,8 +5,9 @@ import socket
 class PcapParser():
     def __init__(self):
         self.hosts = dict()
-        self.services = {22: 'ssh', 53: 'dns', 80: 'http', 123: 'ntp', 443: 'https', 137: 'NetBIOS', 138: 'NetBIOS', 139: 'NetBIOS'}
+        self.services = {22: 'ssh', 53: 'dns', 80: 'http', 123: 'ntp', 443: 'https', 137: 'NetBIOS', 138: 'NetBIOS', 139: 'NetBIOS', 67: 'BOOTP', 68: 'BOOTP'}
 
+    # consumes the pcap file into a usefule dictionary
     def parsePcapFile(self, filename):
         print("Eating PCAP file")
         with PcapReader(filename) as pcap_reader:
@@ -19,8 +20,9 @@ class PcapParser():
                     # every IP packet should have them
                     # maybe my firewall would drop them
                     pass
-        print("Nom") 
+        print("Nom") # Done
 
+    # A helper method to less complicate the creation of nested dictionaries
     def addToDict(self, srcip, dstip, dport, pktlen):
         # Ignore the high level ports
         if int(dport) > 1024:
@@ -41,6 +43,8 @@ class PcapParser():
     def printHosts(self):
         for host in self.hosts: 
             self.printHost(host)
+
+    # print the report for a single host
     def printHost(self, host):
         try:
             hostname = socket.gethostbyaddr(host)
