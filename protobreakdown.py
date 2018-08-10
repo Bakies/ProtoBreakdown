@@ -37,24 +37,27 @@ class PcapParser():
             self.addToDict(srcip, dstip, dport, pktlen)
         # print(self.hosts)
 
+    # print a report for all the hosts from the capture
     def printHosts(self):
         for host in self.hosts: 
-            try:
-                hostname = socket.gethostbyaddr(host)
-            except socket.error as e:
-                # print(e)
-                hostname = ("Could not resolve hostname", "")
-                
-            print("Report for %-15s (%s)" % (host, hostname[0]))
-            totalTraffic = 0
-            for key in self.hosts[host]:
-                totalTraffic = totalTraffic + self.hosts[host][key]
+            self.printHost(host)
+    def printHost(self, host):
+        try:
+            hostname = socket.gethostbyaddr(host)
+        except socket.error as e:
+            # print(e)
+            hostname = ("Could not resolve hostname", "")
+            
+        print("Report for %-15s (%s)" % (host, hostname[0]))
+        totalTraffic = 0
+        for key in self.hosts[host]:
+            totalTraffic = totalTraffic + self.hosts[host][key]
 
-            for port in sorted(self.hosts[host]):
-                percent = str(int(self.hosts[host][port] / totalTraffic * 100)) + "%"
-                service = self.services[port] if port in self.services else ''
-                print('port %-4d | %7s | %-4s | %s bytes' % (port, service, percent, self.hosts[host][port]))
-            print()
+        for port in sorted(self.hosts[host]):
+            percent = str(int(self.hosts[host][port] / totalTraffic * 100)) + "%"
+            service = self.services[port] if port in self.services else ''
+            print('port %-4d | %7s | %-4s | %s bytes' % (port, service, percent, self.hosts[host][port]))
+        print()
 
 if __name__ == '__main__':
     import argparse
@@ -64,11 +67,14 @@ if __name__ == '__main__':
     target = None
     p.add_argument('-v','--verbose', default=False, metavar="verbose")
     p.add_argument('-f','--file','--filename', required=True, metavar="file", help='Location of the PCAP file')
-    # p.add_argument('-t', '--target', default=None, metavar="target", help="The IP Address under investigation")
+    p.add_argument('-a', '--addr', '--address', default=None, metavar="host", help="The IP Address under investigation")
     
     args = p.parse_args()
     
     parser = PcapParser()
     parser.parsePcapFile(args.file) # , target=args.targat)
-    parser.printHosts()
+    if args.addr is None:
+        parser.printHosts()
+    else:
+        parser.printHost(args.addr)
 
